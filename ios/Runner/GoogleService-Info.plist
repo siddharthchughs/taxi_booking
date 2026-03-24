@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>95459701701-co5h6gtsctu1i4f22533u808c11k1c6q.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyBTWbhCimcwXcTzYie6oFF8-gUzmGz5fac</string>
+	<key>GCM_SENDER_ID</key>
+	<string>95459701701</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.location.taxiBooking</string>
+	<key>PROJECT_ID</key>
+	<string>ensurecritical-c-1488204492384</string>
+	<key>STORAGE_BUCKET</key>
+	<string>ensurecritical-c-1488204492384.firebasestorage.app</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:95459701701:ios:e59515b0c953aaef2e11ac</string>
+	<key>DATABASE_URL</key>
+	<string>https://ensurecritical-c-1488204492384.firebaseio.com</string>
+</dict>
+</plist>

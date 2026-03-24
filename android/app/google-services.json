@@ -1,0 +1,75 @@
+{
+  "project_info": {
+    "project_number": "95459701701",
+    "firebase_url": "https://ensurecritical-c-1488204492384.firebaseio.com",
+    "project_id": "ensurecritical-c-1488204492384",
+    "storage_bucket": "ensurecritical-c-1488204492384.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95459701701:android:820fa45f5925e2b32e11ac",
+        "android_client_info": {
+          "package_name": "com.example.booking_taxi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "95459701701-aeo4bdovlfatq297he9ur0kv6ij6ua6r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS2SuB13uLWIv-g9PU_kxFzhbA76F_c8U"
+        },
+        {
+          "current_key": "AIzaSyBBwOb_C9ZYycLeGJJFjMRd5xeTC8-qRIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "95459701701-aeo4bdovlfatq297he9ur0kv6ij6ua6r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95459701701:android:6f5adcd01feddb1c2e11ac",
+        "android_client_info": {
+          "package_name": "com.location.taxi_booking"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "95459701701-aeo4bdovlfatq297he9ur0kv6ij6ua6r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBS2SuB13uLWIv-g9PU_kxFzhbA76F_c8U"
+        },
+        {
+          "current_key": "AIzaSyBBwOb_C9ZYycLeGJJFjMRd5xeTC8-qRIE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "95459701701-aeo4bdovlfatq297he9ur0kv6ij6ua6r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
