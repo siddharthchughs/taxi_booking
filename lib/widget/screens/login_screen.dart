@@ -37,15 +37,11 @@ class _LoginState extends State<LoginScreen> {
   @override
   void initState() {
     super.initState();
+    initConnectivity();
     _focusNode = FocusNode();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(
       updateConnectionStatus,
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   Future<void> loginUser() async {
@@ -167,7 +163,7 @@ class _LoginState extends State<LoginScreen> {
           ''
           r'^[\w-\.]+@([\w-]+\.com)+[\w-]{2,4}$',
         );
-        if (emailValidFormat.hasMatch(newUpdatedValue)) {
+        if (!emailValidFormat.hasMatch(newUpdatedValue)) {
           return 'Please enter the email in valid format';
         }
         return null;
@@ -334,5 +330,12 @@ class _LoginState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    _focusNode.dispose();
+    super.dispose();
   }
 }

@@ -3,8 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:provider/provider.dart';
+import 'package:taxi_booking/provider/location_provider.dart';
 import 'package:taxi_booking/services/network/helper_method.dart';
-import 'package:taxi_booking/services/network/network_result.dart';
 import 'dart:io';
 import 'package:taxi_booking/style/view_style.dart';
 
@@ -25,10 +26,6 @@ class _MyRideState extends State<MyRideScreen> {
   double searchBannerHeight = Platform.isIOS ? 295 : 290;
   final Completer<GoogleMapController> _mapController = Completer();
   bool isLocationEnabledChecked = false;
-  @override
-  void initState() {
-    super.initState();
-  }
 
   void userCurrentPosition() async {
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -68,13 +65,17 @@ class _MyRideState extends State<MyRideScreen> {
     );
     _controller.animateCamera(CameraUpdate.newCameraPosition(locationcamera));
 
-    String address = await HelperMethod.findLocationAddress(currentPosition);
+    String address = await HelperMethod.findLocationAddress(
+      currentPosition,
+      context,
+    );
+
     print('home');
     print(address);
   }
 
   static final CameraPosition bk_GooglePosition = CameraPosition(
-    target: LatLng(37.432, -122.08832),
+    target: LatLng(23.45, -122.08832),
     zoom: 10,
   );
 
@@ -291,9 +292,20 @@ class _MyRideState extends State<MyRideScreen> {
                                 Icons.home_outlined,
                                 color: Colors.amberAccent.shade700,
                               ),
-                              title: Text(
-                                'Location 1',
-                                style: TextStyle(fontSize: 18.0),
+                              title: Consumer<LocationProvider>(
+                                builder:
+                                    (
+                                      BuildContext context,
+                                      LocationProvider locationProvider,
+                                      child,
+                                    ) {
+                                      return Text(
+                                        locationProvider
+                                            .pickAddress
+                                            .formattedAddres,
+                                        style: TextStyle(fontSize: 14.0),
+                                      );
+                                    },
                               ),
                               subtitle: Text(
                                 'Your Residentail address',

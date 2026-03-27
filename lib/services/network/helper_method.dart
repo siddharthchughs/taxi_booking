@@ -1,11 +1,13 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:taxi_booking/api_constants.dart';
-import 'package:taxi_booking/services/network/network_result.dart';
+import 'package:provider/provider.dart';
+import 'package:taxi_booking/model/address_model.dart';
+import 'package:taxi_booking/provider/location_provider.dart';
+import 'package:taxi_booking/services/network/geocoding_network_result.dart';
 
 class HelperMethod {
-  static Future<String> findLocationAddress(Position pos) async {
+  static Future<String> findLocationAddress(Position pos, context) async {
     String placeAddress = '';
+    String placeId = '';
     // var connectvityResult = Connectivity().onConnectivityChanged;
     // if (connectvityResult != ConnectivityResult.mobile &&
     //     connectvityResult != ConnectivityResult.wifi) {
@@ -13,19 +15,26 @@ class HelperMethod {
     // }
 
     var uri = Uri.parse(
-      'https://maps.googleapis.com/maps/api/geocode/json?latlng=40.714224,-73.961452&key=AIzaSyBTWbhCimcwXcTzYie6oFF8-gUzmGz5fac',
+      'https://maps.googleapis.com/maps/api/geocode/json?latlng=${pos.latitude},${pos.longitude}&key=AIzaSyBTWbhCimcwXcTzYie6oFF8-gUzmGz5fac',
     );
-
-    print(uri);
-
-    var response = await NetworkConnecctivity.getGeoAddressRequest(
+    var response = await GeoCodingNetworkResult.getGeoAddressRequest(
       uri.toString(),
     );
-    print(response);
 
-    //    if (response != 'failed') {
-    placeAddress = response['results'][0]['formatted_address'];
-    //  }
+    if (response != 'failed') {
+      placeAddress = response['results'][0]['formatted_address'];
+      placeId = response['results'][0]['place_id'];
+      AddressModel addressModel = AddressModel(
+        placeId: placeId,
+        latitude: pos.latitude,
+        longitude: pos.longitude,
+        formattedAddres: placeAddress,
+      );
+      Provider.of<LocationProvider>(
+        context,
+        listen: false,
+      ).updatePickUpAddress(addressModel);
+    }
 
     return placeAddress;
   }

@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:taxi_booking/api_constants.dart';
 
-class NetworkConnecctivity {
+class GeoCodingNetworkResult {
   static Future<dynamic> getGeoAddressRequest(String url) async {
     final uri = Uri.parse(url);
     final response = await http
