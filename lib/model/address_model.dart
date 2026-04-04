@@ -2,7 +2,7 @@ class AddressModel {
   String placeId;
   double latitude;
   double longitude;
-  String formattedAddres;
+  String? formattedAddres;
   AddressModel({
     required this.placeId,
     required this.latitude,
@@ -10,14 +10,14 @@ class AddressModel {
     required this.formattedAddres,
   });
 
-  factory AddressModel.fromJson(Map mapJson) {
-    return AddressModel(
-      placeId: mapJson['place_id'],
-      latitude: 0,
-      longitude: 0,
-      formattedAddres: mapJson['formatted_address'],
-    );
-  }
+  // factory AddressModel.fromJson(Map mapJson) {
+  //   return AddressModel(
+  //     placeId: mapJson['place_id'],
+  //     latitude: mapJson[],
+  //     longitude: mapJson[],
+  //     formattedAddres: mapJson['formatted_address'],
+  //   );
+  // }
 
   //  MoviesModel.fromJson(Map<String, dynamic> json) {
   //   page = json['page'];

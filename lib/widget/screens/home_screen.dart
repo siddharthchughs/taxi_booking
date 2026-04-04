@@ -1,13 +1,16 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
-import 'package:taxi_booking/provider/location_provider.dart';
-import 'package:taxi_booking/services/network/helper_method.dart';
-import 'dart:io';
+import 'package:taxi_booking/services/init_getit.dart';
+import 'package:taxi_booking/services/navigation/navigation_service.dart';
+import 'package:taxi_booking/services/network/network_request_result.dart';
 import 'package:taxi_booking/style/view_style.dart';
+import 'package:taxi_booking/viewmodel/location_provider.dart';
+import 'package:taxi_booking/widget/screens/search_screen.dart';
 
 class MyRideScreen extends StatefulWidget {
   const MyRideScreen({super.key});
@@ -23,18 +26,25 @@ class _MyRideState extends State<MyRideScreen> {
   late GoogleMapController _controller;
   final scaffoldKey = GlobalKey<ScaffoldState>();
   final destinationFormKey = GlobalKey<FormState>();
-  double searchBannerHeight = Platform.isIOS ? 295 : 290;
+  double searchBannerHeight = Platform.isIOS ? 300 : 310;
   final Completer<GoogleMapController> _mapController = Completer();
   bool isLocationEnabledChecked = false;
+  //  late Future<Position> Function() _currentPositionFuture;
 
-  void userCurrentPosition() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+  @override
+  void initState() {
+    myCurrentLocation();
+    super.initState();
+  }
+
+  void _userCurrentPosition() async {
+    isLocationEnabledChecked = await Geolocator.isLocationServiceEnabled();
+    if (!isLocationEnabledChecked) {
       print('Location services are disabled.');
       return;
     }
 
-    // 2. Check and Request Permissions
+    //   // 2. Check and Request Permissions
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
@@ -50,10 +60,11 @@ class _MyRideState extends State<MyRideScreen> {
       );
       return;
     }
-    Position newPosition = await Geolocator.getCurrentPosition(
-      desiredAccuracy: LocationAccuracy.bestForNavigation,
-    );
+
+    Position newPosition = await Geolocator.getCurrentPosition();
+
     currentPosition = newPosition;
+    print('currentPosition: $currentPosition');
 
     LatLng postionByLatLng = LatLng(
       newPosition.latitude,
@@ -65,22 +76,47 @@ class _MyRideState extends State<MyRideScreen> {
     );
     _controller.animateCamera(CameraUpdate.newCameraPosition(locationcamera));
 
-    String address = await HelperMethod.findLocationAddress(
-      currentPosition,
-      context,
-    );
-
-    print('home');
-    print(address);
+    await NetworkRequestResult.findLocationAddress(currentPosition, context);
   }
 
-  static final CameraPosition bk_GooglePosition = CameraPosition(
-    target: LatLng(23.45, -122.08832),
-    zoom: 10,
+  void myCurrentLocation() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.best,
+    );
+    currentPosition = position;
+    LatLng postionByLatLng = LatLng(position.latitude, position.longitude);
+    print('postionByLatLng: $postionByLatLng');
+    CameraPosition locationcamera = CameraPosition(
+      target: postionByLatLng,
+      zoom: 14,
+    );
+    _controller.animateCamera(CameraUpdate.newCameraPosition(locationcamera));
+  }
+
+  static final bk_intialPosition = CameraPosition(
+    target: LatLng(28.66929, 77.1033),
+    zoom: 14,
   );
+
+  double getButtonBottomPadding() {
+    if (Platform.isIOS) {
+      return searchBannerHeight + 20;
+    } else {
+      return searchBannerHeight + 40;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    Widget content = Container(
+      width: double.infinity,
+      height: 80,
+      color: Colors.yellow,
+      child: Column(
+        children: [CircularProgressIndicator(), SizedBox(height: 20)],
+      ),
+    );
+
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: Colors.blue.shade500,
@@ -90,7 +126,7 @@ class _MyRideState extends State<MyRideScreen> {
         child: Drawer(
           child: ListView(
             padding: EdgeInsets.all(8.0),
-            children: <Widget>[
+            children: [
               SizedBox(
                 height: 160,
                 child: DrawerHeader(
@@ -171,20 +207,21 @@ class _MyRideState extends State<MyRideScreen> {
           GoogleMap(
             padding: EdgeInsets.only(bottom: mapBottomPadding),
             mapType: MapType.normal,
+            tiltGesturesEnabled: true,
             zoomControlsEnabled: false,
+            zoomGesturesEnabled: true,
             myLocationEnabled: true, // Shows the "My Location" layer
-            myLocationButtonEnabled: true,
-            initialCameraPosition: bk_GooglePosition,
+            myLocationButtonEnabled: false,
+            initialCameraPosition: bk_intialPosition,
             onMapCreated: (GoogleMapController controller) {
               _mapController.complete(controller);
               _controller = controller;
 
               setState(() {
-                mapBottomPadding = Platform.isIOS ? 300 : 290;
+                mapBottomPadding = Platform.isIOS ? 300 : 320;
+                getButtonBottomPadding();
               });
-              setState(() {
-                userCurrentPosition();
-              });
+              _userCurrentPosition();
             },
           ),
           Positioned(
@@ -240,115 +277,133 @@ class _MyRideState extends State<MyRideScreen> {
                   horizontal: 10,
                   vertical: 12,
                 ),
-                child: Form(
-                  key: destinationFormKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(height: 5.1),
-                      Text(
-                        'Where to?',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontFamily: 'Brand-Bold',
-                        ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 5),
+                    Text(
+                      'Where to?',
+                      style: TextStyle(fontSize: 16, fontFamily: 'Brand-Bold'),
+                    ),
+                    SizedBox(height: 14.0),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 12.0,
+                            spreadRadius: 0.5,
+                            offset: Offset(0.7, 0.7),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 14.0),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.all(Radius.circular(12)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 12.0,
-                              spreadRadius: 0.5,
-                              offset: Offset(0.7, 0.7),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          children: [
-                            IconButton.filled(
-                              onPressed: () {},
-                              icon: Icon(Icons.search_rounded),
-                              color: Colors.white,
-                            ),
-                            SizedBox(width: 16),
-                            Expanded(
-                              child: homeUserInputField(
-                                nameInput: userDestinationName,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 12),
-                      Row(
-                        children: <Widget>[
+                      child: Row(
+                        children: [
+                          IconButton.filled(
+                            onPressed: () {
+                              getIt<NavigationService>().navigateTo(
+                                SearchScreen(),
+                              );
+                            },
+                            icon: Icon(Icons.search_rounded),
+                            color: Colors.white,
+                          ),
+                          SizedBox(width: 16),
                           Expanded(
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.home_outlined,
-                                color: Colors.amberAccent.shade700,
-                              ),
-                              title: Consumer<LocationProvider>(
-                                builder:
-                                    (
-                                      BuildContext context,
-                                      LocationProvider locationProvider,
-                                      child,
-                                    ) {
-                                      return Text(
-                                        locationProvider
+                            child: homeUserInputField(
+                              nameInput: userDestinationName,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    SizedBox(height: 2),
+
+                    Expanded(
+                      child: Consumer(
+                        builder:
+                            (
+                              context,
+                              LocationProvider locationProvider,
+                              child,
+                            ) {
+                              return SizedBox(
+                                width: double.infinity,
+                                height: 100,
+                                child: ListTile(
+                                  leading: Icon(
+                                    Icons.home_outlined,
+                                    color: Colors.amberAccent.shade700,
+                                  ),
+                                  title: Text(
+                                    locationProvider
                                             .pickAddress
-                                            .formattedAddres,
-                                        style: TextStyle(fontSize: 14.0),
-                                      );
-                                    },
-                              ),
-                              subtitle: Text(
-                                'Your Residentail address',
-                                style: TextStyle(fontSize: 14.0),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 2),
-                      Divider(
-                        height: 0.5,
-                        color: Colors.black12,
-                        thickness: 1.0,
-                      ),
-                      Row(
-                        children: <Widget>[
-                          Expanded(
-                            child: ListTile(
-                              leading: Icon(
-                                Icons.work_outline,
-                                color: Colors.amberAccent.shade700,
-                              ),
-                              title: Text(
-                                'Location 2',
-                                style: TextStyle(
-                                  fontSize: 18.0,
-                                  fontFamily: 'Brand-Bold',
+                                            ?.formattedAddres ??
+                                        'No Address Available !',
+                                    style: TextStyle(
+                                      fontSize: 15.0,
+                                      fontFamily: 'Brand-Bold',
+                                    ),
+                                    maxLines: 2,
+                                    softWrap: true,
+                                    overflow: TextOverflow.ellipsis,
+                                    textDirection: TextDirection.ltr,
+                                  ),
+
+                                  subtitle: Text(
+                                    'Your Residentail address',
+                                    style: TextStyle(fontSize: 14.0),
+                                  ),
                                 ),
-                              ),
-                              subtitle: Text(
-                                'Your Work address',
-                                style: TextStyle(fontSize: 14.0),
-                              ),
-                            ),
-                          ),
-                        ],
+                              );
+                            },
                       ),
-                      SizedBox(height: 10),
-                    ],
-                  ),
+                    ),
+
+                    Divider(height: 0.5, color: Colors.black12, thickness: 1.0),
+                    Expanded(
+                      flex: 1,
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.work_outline,
+                          color: Colors.amberAccent.shade700,
+                        ),
+                        title: Text(
+                          'Location 2',
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontFamily: 'Brand-Bold',
+                          ),
+                        ),
+                        subtitle: Text(
+                          'Your Work address',
+                          style: TextStyle(fontSize: 14.0),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+                  ],
                 ),
               ),
+            ),
+          ),
+          Positioned(
+            bottom:
+                searchBannerHeight +
+                16, // Places it 16px above your white bottom sheet
+            right: 16,
+            child: FloatingActionButton(
+              backgroundColor: Colors.white,
+              mini: true, // Standard size for map buttons
+              onPressed: () {
+                myCurrentLocation();
+                // Call your existing function to animate the camera
+              },
+              child: Icon(Icons.my_location, color: Colors.blueAccent.shade400),
             ),
           ),
         ],
@@ -358,6 +413,7 @@ class _MyRideState extends State<MyRideScreen> {
 
   Widget homeUserInputField({required String nameInput}) {
     return TextFormField(
+      readOnly: true,
       autofocus: false,
       initialValue: nameInput,
       decoration: InputDecoration(
