@@ -67,26 +67,28 @@ class NetworkRequestResult {
     String apiKey = Platform.isIOS
         ? ApiConstants.iOSkey
         : ApiConstants.androidkey;
-    print('Response :: ${placeId}');
-    var uri = Uri.parse(
-      placeId.isNotEmpty
-          ? 'https://maps.googleapis.com/maps/api/place/details/json?placeid=${placeId}&key=${apiKey}'
-          : 'https://maps.googleapis.com/maps/api/place/details/json?placeid=unknow&key=${apiKey}',
-    );
-    var response = await GeoCodingNetworkResult.getUrlRequest(uri.toString());
-    if (response['status'] == 'OK') {
-      if (response['result'] == null) {
-        PlaceDetailModel detailModel = PlaceDetailModel.fromJson(
-          response['result'],
-        );
-        Provider.of<LocationProvider>(
-          context,
-          listen: false,
-        ).updatePickAddressInfo(detailModel);
-        print('Response Detail${detailModel.formattedAddress}\n');
+
+    try {
+      var uri = Uri.parse(
+        'https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeId&key=$apiKey',
+      );
+      var response = await GeoCodingNetworkResult.getUrlRequest(uri.toString());
+      if (response['status'] != 'OK') {
+        throw Exception('Failed to load location: ${response['status']}');
       }
-    } else {
-      return Future.error('Failed to load location :: ${response['status']}');
+
+      final placeDetail = response['result'] as Map<String, dynamic>?;
+      if (placeDetail == null) {
+        throw Exception('Failed to load location: missing result data');
+      }
+
+      final detailModel = PlaceDetailModel.fromJson(placeDetail);
+      Provider.of<LocationProvider>(
+        context,
+        listen: false,
+      ).updatePickAddressInfo(detailModel);
+    } catch (error) {
+      throw Future.error('Failed to load location: ${error.toString()}');
     }
   }
 }

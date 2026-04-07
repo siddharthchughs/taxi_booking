@@ -11,7 +11,7 @@ class CustomProgressbar extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadiusGeometry.circular(8.0),
       ),
-      backgroundColor: Colors.transparent,
+      backgroundColor: Colors.lightBlue.shade300,
       child: Container(
         margin: EdgeInsets.all(16.0),
         width: double.infinity,

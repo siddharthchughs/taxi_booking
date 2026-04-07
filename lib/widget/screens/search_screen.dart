@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:taxi_booking/model/search_place_model.dart';
+import 'package:taxi_booking/services/init_getit.dart';
 import 'package:taxi_booking/services/network/network_request_result.dart';
 import 'package:taxi_booking/viewmodel/location_provider.dart';
+import 'package:taxi_booking/widget/custom_progressbar.dart';
 import 'package:taxi_booking/widget/predictions_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -15,7 +17,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchState extends State<SearchScreen> {
-  var _currentLocationState;
+  var _currentLocationState = '';
   var _destinationState = '';
   final searchLocationKey = GlobalKey<FormState>();
   final FocusNode searchLocationFocusNode = FocusNode();
@@ -41,7 +43,7 @@ class _SearchState extends State<SearchScreen> {
     }
     searchLocationKey.currentState!.save();
     _destinationState = destination;
-    if (_currentLocationState != null || _destinationState.isNotEmpty) {
+    if (_currentLocationState.isNotEmpty || _destinationState.isNotEmpty) {
       if (!mounted) return;
       final response = await NetworkRequestResult().searchPlaces(
         _destinationState,
@@ -54,11 +56,27 @@ class _SearchState extends State<SearchScreen> {
   }
 
   void searchPlaceByID(String placeId, context) async {
-    if (placeId.isNotEmpty) {
-      await NetworkRequestResult().placeInfo(placeId, context);
-    } else {
-      Future.error('error');
+    if (!mounted) return;
+    showDialog(
+      context: context,
+      builder: (context) {
+        return CustomProgressbar(status: 'Logging In..');
+      },
+    );
+
+    try {
+      await getIt<NetworkRequestResult>().placeInfo(placeId, context);
+    } catch (e) {
+      if (mounted) {
+        Navigator.of(context, rootNavigator: true).pop();
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+      return;
     }
+    if (!mounted) return;
+    Navigator.of(context, rootNavigator: true).pop();
   }
 
   @override
@@ -113,7 +131,11 @@ class _SearchState extends State<SearchScreen> {
                         itemBuilder: (context, index) {
                           return ChangeNotifierProvider.value(
                             value: _predictions[index],
-                            child: PredictionItemWidget(),
+                            child: PredictionItemWidget(
+                              onDestinationSelected: (SearchPlaceModel search) {
+                                searchPlaceByID(search.placeId, context);
+                              },
+                            ),
                           );
                         },
                       ),
@@ -121,7 +143,7 @@ class _SearchState extends State<SearchScreen> {
                   : SizedBox(
                       width: double.infinity,
                       height: 200,
-                      child: Text('No record found !'),
+                      child: Center(child: Text('No record found !')),
                     ),
             ),
           ],

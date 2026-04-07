@@ -13,8 +13,8 @@ class LocationProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void updatePickAddressInfo(PlaceDetailModel destination) {
-    placeDestinationAddress = destination;
+  void updatePickAddressInfo(PlaceDetailModel placeInfo) {
+    placeDestinationAddress = placeInfo;
     notifyListeners();
   }
 

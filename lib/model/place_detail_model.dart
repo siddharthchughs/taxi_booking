@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
 class PlaceDetailModel {
@@ -23,11 +24,18 @@ class PlaceDetailModel {
 
   PlaceDetailModel.fromJson(Map<String, dynamic> json) {
     placeId = json['place_id'];
-    formattedAddress = json['address_components']['formatted_address'];
+    formattedAddress = json['formatted_address'];
     name = json['name'];
     icon = json['icon'];
-    iconbackgroundcolor = json['icon_background_color'];
-    lat = json['geometry']['location'];
+    lat = json['geometry']['location']['lat'];
+    lng = json['geometry']['location']['lng'];
+
+    final iconColorString = json['icon_background_color'] as String?;
+    if (iconColorString != null && iconColorString.isNotEmpty) {
+      iconbackgroundcolor = Color(
+        int.parse(iconColorString.replaceFirst('#', '0xff')),
+      );
+    }
   }
 }
 
