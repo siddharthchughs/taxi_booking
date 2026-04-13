@@ -5,8 +5,19 @@ import 'package:taxi_booking/model/search_place_model.dart';
 
 class LocationProvider with ChangeNotifier {
   AddressModel? pickAddress;
+  AddressModel? destinationDrop;
   SearchPlaceModel? destinationAddress;
   PlaceDetailModel? placeDestinationAddress;
+
+  void updatePickUpAddress(AddressModel pickup) {
+    pickAddress = pickup;
+    notifyListeners();
+  }
+
+  void updateDropDestination(AddressModel destination) {
+    destinationDrop = destination;
+    notifyListeners();
+  }
 
   void updatePickDestination(SearchPlaceModel destination) {
     destinationAddress = destination;
@@ -15,11 +26,6 @@ class LocationProvider with ChangeNotifier {
 
   void updatePickAddressInfo(PlaceDetailModel placeInfo) {
     placeDestinationAddress = placeInfo;
-    notifyListeners();
-  }
-
-  void updatePickUpAddress(AddressModel pickup) {
-    pickAddress = pickup;
     notifyListeners();
   }
 }

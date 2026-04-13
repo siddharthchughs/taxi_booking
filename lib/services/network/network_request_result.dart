@@ -1,9 +1,11 @@
 import 'dart:io';
 
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:taxi_booking/api_constants.dart';
 import 'package:taxi_booking/model/address_model.dart';
+import 'package:taxi_booking/model/direction_detail_model.dart';
 import 'package:taxi_booking/model/place_detail_model.dart';
 import 'package:taxi_booking/model/search_place_model.dart';
 import 'package:taxi_booking/viewmodel/location_provider.dart';
@@ -73,22 +75,43 @@ class NetworkRequestResult {
         'https://maps.googleapis.com/maps/api/place/details/json?placeid=$placeId&key=$apiKey',
       );
       var response = await GeoCodingNetworkResult.getUrlRequest(uri.toString());
-      if (response['status'] != 'OK') {
-        throw Exception('Failed to load location: ${response['status']}');
-      }
+      if (response['status'] == 'OK') {
+        final placeDetail = response['result'] as Map<String, dynamic>?;
+        if (placeDetail == null) {
+          throw Exception('Failed to load location: missing result data');
+        }
 
-      final placeDetail = response['result'] as Map<String, dynamic>?;
-      if (placeDetail == null) {
-        throw Exception('Failed to load location: missing result data');
+        final detailModel = PlaceDetailModel.fromJson(placeDetail);
+        print(detailModel.name);
+        Provider.of<LocationProvider>(
+          context,
+          listen: false,
+        ).updatePickAddressInfo(detailModel);
       }
-
-      final detailModel = PlaceDetailModel.fromJson(placeDetail);
-      Provider.of<LocationProvider>(
-        context,
-        listen: false,
-      ).updatePickAddressInfo(detailModel);
     } catch (error) {
       throw Future.error('Failed to load location: ${error.toString()}');
+    }
+  }
+
+  Future<DirectionDetailModel> getDirectionDetails(
+    LatLng startCoordinates,
+    LatLng endCoordinates,
+    context,
+  ) async {
+    String apiKey = Platform.isIOS
+        ? ApiConstants.iOSkey
+        : ApiConstants.androidkey;
+    var uri = Uri.parse(
+      'https://maps.googleapis.com/maps/api/directions/json?origin=${startCoordinates.latitude},${startCoordinates.longitude}&destination=${endCoordinates.latitude},${endCoordinates.longitude}&key=$apiKey',
+    );
+    var response = await GeoCodingNetworkResult.getUrlRequest(uri.toString());
+
+    if (response['status'] == 'OK') {
+      var directionalSteps = response['routes'][0];
+      var infoPoints = DirectionDetailModel.fromJson(directionalSteps);
+      return infoPoints;
+    } else {
+      return Future.error('Error in fetching the data:: ${response['status']}');
     }
   }
 }

@@ -1,13 +1,13 @@
 class AddressModel {
-  String placeId;
-  double latitude;
-  double longitude;
+  String? placeId;
+  double? latitude;
+  double? longitude;
   String? formattedAddres;
   AddressModel({
-    required this.placeId,
-    required this.latitude,
-    required this.longitude,
-    required this.formattedAddres,
+    this.placeId,
+    this.latitude,
+    this.longitude,
+    this.formattedAddres,
   });
 
   // factory AddressModel.fromJson(Map mapJson) {

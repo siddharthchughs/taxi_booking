@@ -9,26 +9,26 @@ class PlaceDetailModel {
   String? name;
   String? icon;
   Color? iconbackgroundcolor;
-  double? lat;
-  double? lng;
+  double? latitude;
+  double? longitude;
 
-  PlaceDetailModel({
-    required this.placeId,
-    required this.name,
-    required this.formattedAddress,
-    required this.icon,
-    required this.iconbackgroundcolor,
-    required this.lat,
-    required this.lng,
-  });
+  PlaceDetailModel(
+    this.placeId,
+    this.name,
+    this.formattedAddress,
+    this.icon,
+    this.iconbackgroundcolor,
+    this.latitude,
+    this.longitude,
+  );
 
   PlaceDetailModel.fromJson(Map<String, dynamic> json) {
     placeId = json['place_id'];
     formattedAddress = json['formatted_address'];
     name = json['name'];
     icon = json['icon'];
-    lat = json['geometry']['location']['lat'];
-    lng = json['geometry']['location']['lng'];
+    latitude = json['geometry']['location']['lat'];
+    longitude = json['geometry']['location']['lng'];
 
     final iconColorString = json['icon_background_color'] as String?;
     if (iconColorString != null && iconColorString.isNotEmpty) {

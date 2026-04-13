@@ -13,6 +13,12 @@ class NavigationService {
     );
   }
 
+  Future<dynamic>? navigateWithArgument(Widget widget, String argument) {
+    return navigationKey.currentState?.push(
+      MaterialPageRoute(builder: (ctx) => widget),
+    );
+  }
+
   Future<dynamic>? navigateRemoveUntil(Widget widget) {
     return navigationKey.currentState?.pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => widget),

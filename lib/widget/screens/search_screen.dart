@@ -66,6 +66,12 @@ class _SearchState extends State<SearchScreen> {
 
     try {
       await getIt<NetworkRequestResult>().placeInfo(placeId, context);
+
+      if (Navigator.canPop(context)) {
+        Navigator.pop(context);
+      }
+
+      Navigator.pop(context, 'getDirection');
     } catch (e) {
       if (mounted) {
         Navigator.of(context, rootNavigator: true).pop();
@@ -75,8 +81,8 @@ class _SearchState extends State<SearchScreen> {
       }
       return;
     }
-    if (!mounted) return;
-    Navigator.of(context, rootNavigator: true).pop();
+    // if (!mounted) return;
+    // Navigator.of(context, rootNavigator: true).pop();
   }
 
   @override
@@ -134,6 +140,7 @@ class _SearchState extends State<SearchScreen> {
                             child: PredictionItemWidget(
                               onDestinationSelected: (SearchPlaceModel search) {
                                 searchPlaceByID(search.placeId, context);
+                                //                                Navigator.pop(context, 'getDirection');
                               },
                             ),
                           );

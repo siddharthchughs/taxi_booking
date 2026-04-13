@@ -6,10 +6,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:taxi_booking/services/init_getit.dart';
-import 'package:taxi_booking/services/navigation/navigation_service.dart';
 import 'package:taxi_booking/services/network/network_request_result.dart';
 import 'package:taxi_booking/style/view_style.dart';
 import 'package:taxi_booking/viewmodel/location_provider.dart';
+import 'package:taxi_booking/widget/custom_progressbar.dart';
 import 'package:taxi_booking/widget/screens/search_screen.dart';
 
 class MyRideScreen extends StatefulWidget {
@@ -287,42 +287,53 @@ class _MyRideState extends State<MyRideScreen> {
                       style: TextStyle(fontSize: 16, fontFamily: 'Brand-Bold'),
                     ),
                     SizedBox(height: 14.0),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.all(Radius.circular(12)),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 12.0,
-                            spreadRadius: 0.5,
-                            offset: Offset(0.7, 0.7),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          IconButton.filled(
-                            onPressed: () {
-                              getIt<NavigationService>().navigateTo(
-                                SearchScreen(),
-                              );
-                            },
-                            icon: Icon(Icons.search_rounded),
-                            color: Colors.white,
-                          ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: homeUserInputField(
-                              nameInput: userDestinationName,
+
+                    GestureDetector(
+                      onTap: () async {},
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.redAccent.shade400,
+                          borderRadius: BorderRadius.all(Radius.circular(12)),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 12.0,
+                              spreadRadius: 0.5,
+                              offset: Offset(0.7, 0.7),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            IconButton(
+                              onPressed: () async {
+                                final response = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) {
+                                      return SearchScreen();
+                                    },
+                                  ),
+                                );
+                                print('flutter :: ${response}');
+                                if (response != null) {
+                                  await getDirectionRoute();
+                                }
+                              },
+                              icon: Icon(Icons.search_rounded),
+                            ),
+
+                            SizedBox(width: 16),
+                            Expanded(
+                              child: homeUserInputField(
+                                nameInput: userDestinationName,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     SizedBox(height: 12),
-                    SizedBox(height: 2),
-
                     Expanded(
                       child: Consumer(
                         builder:
@@ -440,5 +451,99 @@ class _MyRideState extends State<MyRideScreen> {
         userDestinationName = updateUsername!;
       },
     );
+  }
+
+  // Future<void> getDirectionRoute() async {
+  //   if (!mounted) return;
+  //   showDialog(
+  //     context: context,
+  //     builder: (context) {
+  //       return CustomProgressbar(status: 'Logging In..');
+  //     },
+  //   );
+
+  //   var pickup = getIt<LocationProvider>().pickAddress;
+  //   var destinationdrop = getIt<LocationProvider>().destinationDrop;
+
+  //   print('flutter :: ${pickup!.latitude}::${pickup.longitude}');
+
+  //   var pickLatLng = LatLng(pickup.latitude, pickup.longitude);
+  //   var destinationLatLng = LatLng(
+  //     destinationdrop!.latitude,
+  //     destinationdrop.longitude,
+  //   );
+
+  //   try {
+  //     var response = await getIt<NetworkRequestResult>().getDirectionDetails(
+  //       pickLatLng,
+  //       destinationLatLng,
+  //       context,
+  //     );
+  //     print('flutter :: ${response.distanceText}');
+  //   } catch (e) {
+  //     //   if (mounted) {
+  //     //     Navigator.of(context, rootNavigator: true).pop();
+  //     //     ScaffoldMessenger.of(
+  //     //       context,
+  //     //     ).showSnackBar(SnackBar(content: Text(e.toString())));
+  //     //   }
+
+  //     //   return;
+  //   }
+  //   // if (!mounted) return;
+  //   // Navigator.of(context, rootNavigator: true).pop();
+  // }
+
+  Future<void> getDirectionRoute() async {
+    if (!mounted) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => CustomProgressbar(status: 'Finding best route...'),
+    );
+
+    var pickUp = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    ).pickAddress;
+
+    var destinationAddress = Provider.of<LocationProvider>(
+      context,
+      listen: false,
+    ).placeDestinationAddress;
+
+    if (pickUp == null || destinationAddress == null) {
+      if (Navigator.canPop(context)) Navigator.pop(context); // Dismiss dialog
+      return;
+    }
+
+    var pickup = LatLng(pickUp.latitude ?? 0.0, pickUp.longitude ?? 0.0);
+    var destinationdrop = LatLng(
+      destinationAddress.latitude ?? 0.0,
+      destinationAddress.longitude ?? 0.0,
+    );
+
+    try {
+      var response = await getIt<NetworkRequestResult>().getDirectionDetails(
+        pickup,
+        destinationdrop,
+        context,
+      );
+    } catch (e) {
+      print('flutter :: Error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Failed to get directions: ${e.toString()}")),
+        );
+      }
+    } finally {
+      // 4. THE DISMISSAL: The 'finally' block ensures the dialog closes
+      // whether the 'try' succeeded OR the 'catch' caught an error.
+      if (mounted && Navigator.canPop(context)) {
+        // Use rootNavigator: true if the dialog was opened on the root navigator
+        Navigator.of(context, rootNavigator: true).pop();
+      }
+    }
   }
 }
