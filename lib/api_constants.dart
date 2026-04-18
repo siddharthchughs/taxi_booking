@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class ApiConstants {
   static String androidkey = dotenv.get('GMC_ANDROID_KEY');
@@ -12,4 +13,8 @@ class ApiConstants {
   // };
 
   final headers = {'accept': 'application/json'};
+  static final bk_intialPosition = CameraPosition(
+    target: LatLng(28.66929, 77.1033),
+    zoom: 14,
+  );
 }

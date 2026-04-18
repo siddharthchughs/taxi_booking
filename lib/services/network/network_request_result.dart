@@ -114,4 +114,16 @@ class NetworkRequestResult {
       return Future.error('Error in fetching the data:: ${response['status']}');
     }
   }
+
+  static int estimatedFare(DirectionDetailModel directionDetails) {
+    double baseFare = 3;
+    double distanceFare = (directionDetails.distanceValue! / 1000) * 0.3;
+    double timeFare = (directionDetails.durationValue! / 60) * 0.2;
+    print(baseFare);
+    print(distanceFare);
+
+    double totalFare = baseFare + distanceFare + timeFare;
+    print(totalFare);
+    return totalFare.truncate();
+  }
 }
